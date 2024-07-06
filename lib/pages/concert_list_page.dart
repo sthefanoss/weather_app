@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:weather_app/controllers/current_weather_controller.dart';
+import 'package:weather_app/controllers/concert_list_controller.dart';
 
 class ConcertListBindings extends Bindings {
   @override
   void dependencies() {
-    Get.put(CurrentWeatherController());
+    Get.put(ConcertListController());
   }
 }
 

@@ -27,7 +27,7 @@ class _WeatherAppState extends State<WeatherApp> {
         GetPage(
           name: ConcertListPage.pageName,
           page: () => const ConcertListPage(),
-          binding: CurrentWeatherBindings(),
+          binding: ConcertListBindings(),
         ),
         GetPage(
           name: CurrentWeatherPage.pageName,
