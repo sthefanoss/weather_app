@@ -1,9 +1,8 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:weather_app/services/weather_api_service.dart';
 import 'package:weather_app/weather_app.dart';
-
-import 'services/api_service.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
