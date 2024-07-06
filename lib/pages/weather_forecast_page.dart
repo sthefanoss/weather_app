@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 class WeatherForecastBindings extends Bindings {
   @override
   void dependencies() {
-    Get.put(WeatherForecastController());
+    // TODO get location from arguments
+    Get.put(WeatherForecastController(location: ''));
   }
 }
 
