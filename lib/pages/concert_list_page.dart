@@ -19,8 +19,55 @@ class ConcertListPage extends StatefulWidget {
 }
 
 class _ConcertListPageState extends State<ConcertListPage> {
+  final controller = Get.find<ConcertListController>();
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Concert List')),
+        body: Center(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: const InputDecoration(labelText: 'Search'),
+                  onChanged: controller.setFilter,
+                ),
+              ),
+              Obx(() {
+                final concertPlaces = controller.concertPlaces;
+
+                if (concertPlaces.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Text(
+                      'No concerts found at this location.',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  );
+                }
+
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: concertPlaces.length,
+                    itemBuilder: (context, index) {
+                      final concertPlace = concertPlaces[index];
+
+                      return ListTile(
+                        leading: const Icon(Icons.location_on),
+                        title: Text(concertPlace),
+                      );
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
