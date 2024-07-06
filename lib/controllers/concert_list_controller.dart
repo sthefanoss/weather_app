@@ -12,7 +12,7 @@ class ConcertListController extends GetxController {
   final _filterNormalized = ''.obs;
 
   void setFilter(String filter) {
-    _filterNormalized.value = filter.toLowerCase().withoutDiacriticalMarks;
+    _filterNormalized.value = filter.trim().toLowerCase().withoutDiacriticalMarks;
   }
 
   List<String> get concertPlaces {

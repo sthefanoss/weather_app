@@ -42,6 +42,16 @@ void main() {
       ]);
     });
 
+    test(r'''filter is trimmed''', () {
+      final controller = ConcertListController();
+
+      controller.setFilter('   Brazil  ');
+
+      final locations = controller.concertPlaces;
+
+      expect(locations, ['São Paulo, Brazil']);
+    });
+
     test(r'''filter is normalized''', () {
       final controller = ConcertListController();
 
