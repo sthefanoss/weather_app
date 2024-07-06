@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:weather_app/controllers/concert_list_controller.dart';
+import 'package:weather_app/pages/current_weather_page.dart';
 
 class ConcertListBindings extends Bindings {
   @override
@@ -20,6 +21,13 @@ class ConcertListPage extends StatefulWidget {
 
 class _ConcertListPageState extends State<ConcertListPage> {
   final controller = Get.find<ConcertListController>();
+
+  void _goToCurrentWeatherPage(String location) {
+    Get.toNamed(
+      CurrentWeatherPage.pageName,
+      arguments: CurrentWeatherArguments(location: location),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +67,7 @@ class _ConcertListPageState extends State<ConcertListPage> {
                       return ListTile(
                         leading: const Icon(Icons.location_on),
                         title: Text(concertPlace),
+                        onTap: () => _goToCurrentWeatherPage(concertPlace),
                       );
                     },
                   ),
