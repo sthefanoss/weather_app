@@ -39,7 +39,7 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Current Weather')),
+      appBar: AppBar(title: const Text('Weather Forecast')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
