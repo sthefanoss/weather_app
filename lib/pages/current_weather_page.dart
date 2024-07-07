@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:weather_app/controllers/current_weather_controller.dart';
 import 'package:weather_app/pages/weather_forecast_page.dart';
+import 'package:weather_app/widgets/weather_info.dart';
 
 class CurrentWeatherBindings extends Bindings {
   @override
@@ -128,36 +129,6 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
           WeatherForecastPage.pageName,
           arguments: WeatherForecastArguments(location: controller.location),
         ),
-      ),
-    );
-  }
-}
-
-class WeatherInfo extends StatelessWidget {
-  final String title;
-  final num value;
-  final String unit;
-  final TextStyle? style;
-
-  const WeatherInfo({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.unit,
-    this.style,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final effectiveStyle = style ?? Theme.of(context).textTheme.bodyLarge;
-    return RichText(
-      text: TextSpan(
-        style: effectiveStyle,
-        children: [
-          TextSpan(text: '$title: ', style: effectiveStyle?.copyWith(fontWeight: FontWeight.bold)),
-          TextSpan(text: '$value'),
-          TextSpan(text: unit, style: effectiveStyle?.copyWith(fontWeight: FontWeight.w300)),
-        ],
       ),
     );
   }
