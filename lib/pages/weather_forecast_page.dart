@@ -44,7 +44,7 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24) + const EdgeInsets.only(top: 24),
             child: Text(
               controller.location,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -53,10 +53,17 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
           Obx(() {
             final state = controller.state.value;
 
-            if (state is ErrorState) {
+            if (state case ErrorState(:final offline)) {
               return Column(
                 children: [
-                  const Text('There was an error, please try again.'),
+                  const SizedBox(height: 16),
+                  if (offline)
+                    const Text(
+                      'You are offline! Please, verify your connection.',
+                      textAlign: TextAlign.center,
+                    )
+                  else
+                    const Text('There was an error, please try again.'),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: controller.getWeatherForecast,
@@ -65,47 +72,69 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
                 ],
               );
             }
-
             if (state case SuccessState(:final data) || CachedState(:final data)) {
               return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: ListView.separated(
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
-                    itemCount: data.entries.length,
-                    itemBuilder: (context, index) {
-                      final element = data.entries[index];
-                      return ListTile(
-                        leading: Stack(
-                          children: [
-                            CachedNetworkImage(
-                              imageUrl: element.weather.first.iconUrl,
-                              width: 48,
-                              height: 48,
-                              fit: BoxFit.cover,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        if (state case CachedState(:final lastUpdated, :final offline)) ...[
+                          Text(
+                            'Last update ${DateFormat('dd/MM HH:mm').format(lastUpdated)}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          if (offline)
+                            Text(
+                              'You are offline! Please, verify your connection.',
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              child: Text(DateFormat('dd/MM HH:mm').format(element.timestamp)),
-                            ),
-                          ],
+                        ],
+                      ]),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) => const SizedBox(height: 8),
+                          itemCount: data.entries.length,
+                          itemBuilder: (context, index) {
+                            final element = data.entries[index];
+                            return ListTile(
+                              leading: Stack(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: element.weather.first.iconUrl,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    child: Text(DateFormat('dd/MM HH:mm').format(element.timestamp)),
+                                  ),
+                                ],
+                              ),
+                              title: Text(element.weather.first.description.capitalize!),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  WeatherInfo(title: 'Temperature', value: element.temperature, unit: '°C'),
+                                  WeatherInfo(title: 'Rain', value: element.rain, unit: 'mm'),
+                                  WeatherInfo(title: 'Snow', value: element.snow, unit: 'mm'),
+                                  WeatherInfo(title: 'Humidity', value: element.humidity, unit: '%'),
+                                  WeatherInfo(title: 'Wind', value: element.windSpeed, unit: 'm/s'),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                        title: Text(element.weather.first.description.capitalize!),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            WeatherInfo(title: 'Temperature', value: element.temperature, unit: '°C'),
-                            WeatherInfo(title: 'Rain', value: element.rain, unit: 'mm'),
-                            WeatherInfo(title: 'Snow', value: element.snow, unit: 'mm'),
-                            WeatherInfo(title: 'Humidity', value: element.humidity, unit: '%'),
-                            WeatherInfo(title: 'Wind', value: element.windSpeed, unit: 'm/s'),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             }

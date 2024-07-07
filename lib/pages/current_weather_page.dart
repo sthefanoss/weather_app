@@ -46,7 +46,7 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24) + const EdgeInsets.only(top: 24),
             child: Text(
               controller.location,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -55,10 +55,17 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
           Obx(() {
             final state = controller.state.value;
 
-            if (state is ErrorState) {
+            if (state case ErrorState(:final offline)) {
               return Column(
                 children: [
-                  const Text('There was an error, please try again.'),
+                  const SizedBox(height: 16),
+                  if (offline)
+                    const Text(
+                      'You are offline! Please, verify your connection.',
+                      textAlign: TextAlign.center,
+                    )
+                  else
+                    const Text('There was an error, please try again.'),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: controller.getCurrentWeather,
@@ -74,6 +81,18 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (state case CachedState(:final lastUpdated, :final offline)) ...[
+                      Text(
+                        'Last update ${DateFormat('dd/MM HH:mm').format(lastUpdated)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      if (offline)
+                        Text(
+                          'You are offline! Please, verify your connection.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                    ],
+                    const SizedBox(height: 8),
                     WeatherInfo(
                       title: 'Temperature',
                       value: data.temperature,
@@ -101,18 +120,6 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                     WeatherInfo(title: 'Snow', value: data.snow, unit: 'mm'),
                     WeatherInfo(title: 'Humidity', value: data.humidity, unit: '%'),
                     WeatherInfo(title: 'Wind', value: data.windSpeed, unit: 'm/s'),
-                    if (state case CachedState(:final lastUpdated, :final offline)) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Last update ${DateFormat('dd/MM HH:mm').format(lastUpdated)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w200),
-                      ),
-                      if (offline)
-                        Text(
-                          'You are offline! Please, verify your connection.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w200),
-                        ),
-                    ],
                   ],
                 ),
               );
