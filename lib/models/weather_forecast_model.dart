@@ -3,9 +3,12 @@ import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/responses/weather_forecast_response.dart';
 
 class WeatherForecastModel extends Equatable {
+  final List<WeatherForecasEntry> entries;
+
   const WeatherForecastModel({required this.entries});
 
-  final List<WeatherForecasEntry> entries;
+  WeatherForecastModel.fromJson(Map<String, dynamic> value)
+      : entries = (value['entries'] as List).map((e) => WeatherForecasEntry.fromJson(e)).toList();
 
   WeatherForecastModel.fromWeatherForecastResponse(WeatherForecastResponse response)
       : entries = response.list.map(
@@ -21,6 +24,10 @@ class WeatherForecastModel extends Equatable {
             );
           },
         ).toList();
+
+  Map<String, dynamic> toJson() => {
+        'entries': entries.map((e) => e.toJson()).toList(),
+      };
 
   @override
   List<Object?> get props => [entries];
@@ -45,6 +52,15 @@ class WeatherForecasEntry extends Equatable {
     required this.weather,
   });
 
+  WeatherForecasEntry.fromJson(Map<String, dynamic> value)
+      : timestamp = DateTime.fromMillisecondsSinceEpoch(value['timestamp']),
+        temperature = value['temperature'],
+        rain = value['rain'],
+        snow = value['snow'],
+        humidity = value['humidity'],
+        windSpeed = value['windSpeed'],
+        weather = (value['weather'] as List).map((e) => WeatherModel.fromJson(e)).toList();
+
   @override
   List<Object?> get props => [
         timestamp,
@@ -55,4 +71,14 @@ class WeatherForecasEntry extends Equatable {
         windSpeed,
         weather,
       ];
+
+  Map<String, dynamic> toJson() => {
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'temperature': temperature,
+        'rain': rain,
+        'snow': snow,
+        'humidity': humidity,
+        'windSpeed': windSpeed,
+        'weather': weather.map((e) => e.toJson()).toList(),
+      };
 }
