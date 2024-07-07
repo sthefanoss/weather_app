@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:weather_app/controllers/current_weather_controller.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:weather_app/models/cache_wrapper.dart';
 import 'package:weather_app/models/current_weather_model.dart';
 import 'package:weather_app/services/local_storage_service.dart';
 import 'package:weather_app/services/responses/current_weather_response.dart';
@@ -70,16 +71,17 @@ void main() {
 
       await controller.getCurrentWeather();
 
-      expect(controller.state.value, isA<SuccessState>());
       expect(
-        (controller.state.value as SuccessState).data,
-        const CurrentWeatherModel(
-          rain: 1.0,
-          snow: 3.0,
-          humidity: 80,
-          windSpeed: 10,
-          temperature: 20.0,
-          weather: [WeatherModel(description: 'Clouds', iconUrl: 'iconUrl')],
+        controller.state.value,
+        const SuccessState(
+          CurrentWeatherModel(
+            rain: 1.0,
+            snow: 3.0,
+            humidity: 80,
+            windSpeed: 10,
+            temperature: 20.0,
+            weather: [WeatherModel(description: 'Clouds', iconUrl: 'iconUrl')],
+          ),
         ),
       );
     });
@@ -104,6 +106,103 @@ void main() {
       controller.getCurrentWeather();
 
       verify(() => service.getCurrentWeather(location: locationTest)).called(1);
+    });
+
+    test('use value from cache when available and not expired', () async {
+      const expiryDuration = Duration(minutes: 15);
+      final controller = CurrentWeatherController(location: locationTest, cacheDuration: expiryDuration);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final timestamp = DateTime.now();
+      final expiry = timestamp.add(expiryDuration);
+
+      when(() => service.getCurrentWeather(location: locationMatcher)).thenThrow((_) async => 'Any Error');
+      when(() => storge.getString(key: keyMatcher)).thenReturn(
+        CacheWrapper(
+          data: const CurrentWeatherModel(
+            rain: 1.0,
+            snow: 3.0,
+            humidity: 80,
+            windSpeed: 10,
+            temperature: 20.0,
+            weather: [WeatherModel(description: 'Clouds', iconUrl: 'iconUrl')],
+          ),
+          timestamp: timestamp,
+          expiryDate: expiry,
+        ).encode((e) => e.toJson()),
+      );
+
+      await controller.getCurrentWeather();
+
+      verifyNever(() => service.getCurrentWeather(location: locationMatcher));
+      expect(
+        controller.state.value,
+        CachedState(
+          const CurrentWeatherModel(
+            rain: 1.0,
+            snow: 3.0,
+            humidity: 80,
+            windSpeed: 10,
+            temperature: 20.0,
+            weather: [WeatherModel(description: 'Clouds', iconUrl: 'iconUrl')],
+          ),
+          offline: false,
+          lastUpdated: timestamp,
+        ),
+      );
+    });
+
+    test('make request and update cache when cache is expired', () async {
+      final controller = CurrentWeatherController(location: locationTest);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final timestamp = DateTime.now();
+      final expiry = timestamp.subtract(const Duration(minutes: 1)); // force cache to be expired
+      final response = MockCurrentWeatherResponse();
+
+      when(() => service.getCurrentWeather(location: locationMatcher)) //
+          .thenAnswer((_) async => response);
+      when(() => response.main)
+          .thenReturn(Main(humidity: 80, pressure: 1000, tempMax: 25.0, tempMin: 15.0, temp: 20.0, feelsLike: 22.0));
+      when(() => response.wind).thenReturn(Wind(speed: 10, deg: 20));
+      when(() => response.weather)
+          .thenReturn([Weather(description: 'Clouds', iconUrl: 'iconUrl', id: 1, main: 'main')]);
+      when(() => response.rain).thenReturn(Rain(oneHour: 1.0, threeHours: 2.0));
+      when(() => response.snow).thenReturn(Snow(oneHour: 3.0, threeHours: 4.0));
+      when(() => storge.saveString(key: keyMatcher, value: valueMatcher)).thenAnswer((_) async {});
+      when(() => storge.getString(key: keyMatcher)).thenReturn(
+        CacheWrapper(
+          data: const CurrentWeatherModel(
+            rain: 1.0,
+            snow: 3.0,
+            humidity: 80,
+            windSpeed: 10,
+            temperature: 20.0,
+            weather: [WeatherModel(description: 'Clouds', iconUrl: 'iconUrl')],
+          ),
+          timestamp: timestamp,
+          expiryDate: expiry,
+        ).encode((e) => e.toJson()),
+      );
+
+      await controller.getCurrentWeather();
+
+      verify(() => service.getCurrentWeather(location: locationMatcher)).called(1);
+      verify(() => storge.getString(key: keyMatcher)).called(1);
+      verify(() => storge.saveString(key: keyMatcher, value: valueMatcher)).called(1);
+      expect(
+        controller.state.value,
+        const SuccessState(
+          CurrentWeatherModel(
+            rain: 1.0,
+            snow: 3.0,
+            humidity: 80,
+            windSpeed: 10,
+            temperature: 20.0,
+            weather: [WeatherModel(description: 'Clouds', iconUrl: 'iconUrl')],
+          ),
+        ),
+      );
     });
   });
 }

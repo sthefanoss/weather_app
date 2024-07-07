@@ -1,18 +1,25 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 @immutable
-sealed class ControllerState<D extends Object> {
+sealed class ControllerState<D extends Object> extends Equatable {
   const ControllerState();
 }
 
 @immutable
 class InitialState<D extends Object> extends ControllerState<D> {
   const InitialState();
+
+  @override
+  List<Object?> get props => [];
 }
 
 @immutable
 class LoadingState<D extends Object> extends ControllerState<D> {
   const LoadingState();
+
+  @override
+  List<Object?> get props => [];
 }
 
 @immutable
@@ -20,6 +27,9 @@ class ErrorState<D extends Object> extends ControllerState<D> {
   final Object? errorMessage;
 
   const ErrorState({required this.errorMessage});
+
+  @override
+  List<Object?> get props => [errorMessage];
 }
 
 @immutable
@@ -27,6 +37,9 @@ class SuccessState<D extends Object> extends ControllerState<D> {
   final D data;
 
   const SuccessState(this.data);
+
+  @override
+  List<Object?> get props => [data];
 }
 
 @immutable
@@ -40,4 +53,7 @@ class CachedState<D extends Object> extends ControllerState<D> {
     required this.offline,
     required this.lastUpdated,
   });
+
+  @override
+  List<Object?> get props => [data, offline, lastUpdated];
 }
