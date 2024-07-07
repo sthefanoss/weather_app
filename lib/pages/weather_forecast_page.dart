@@ -1,10 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:weather_app/controllers/weather_forecast_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:weather_app/widgets/weather_info.dart';
+import 'package:weather_app/widgets/forecast_list_tile.dart';
 
 class WeatherForecastBindings extends Bindings {
   @override
@@ -100,38 +99,7 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   childCount: data.entries.length,
-                  (context, index) {
-                    final element = data.entries[index];
-                    return ListTile(
-                      leading: Stack(
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: element.weather.first.iconUrl,
-                            width: 48,
-                            height: 48,
-                            fit: BoxFit.cover,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Text(DateFormat('dd/MM HH:mm').format(element.timestamp)),
-                          ),
-                        ],
-                      ),
-                      title: Text(element.weather.first.description.capitalize!),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          WeatherInfo(title: 'Temperature', value: element.temperature, unit: '°C'),
-                          WeatherInfo(title: 'Rain', value: element.rain, unit: 'mm'),
-                          WeatherInfo(title: 'Snow', value: element.snow, unit: 'mm'),
-                          WeatherInfo(title: 'Humidity', value: element.humidity, unit: '%'),
-                          WeatherInfo(title: 'Wind', value: element.windSpeed, unit: 'm/s'),
-                        ],
-                      ),
-                    );
-                  },
+                  (context, index) => ForecastListTile(forecastEntry: data.entries[index]),
                 ),
               ),
             ] else
