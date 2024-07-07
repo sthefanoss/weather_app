@@ -9,17 +9,8 @@ import 'package:weather_app/services/local_storage_service.dart';
 import 'package:weather_app/services/responses/current_weather_response.dart';
 import 'package:weather_app/services/weather_api_service.dart';
 
-class MockWeatherApiService extends Mock implements WeatherApiService {}
-
-class MockCurrentWeatherResponse extends Mock implements CurrentWeatherResponse {}
-
-class MockLocalStorageService extends Mock implements LocalStorageService {}
-
-String get locationMatcher => any<String>(named: 'location');
-
-String get keyMatcher => any<String>(named: 'key');
-
-String get valueMatcher => any<String>(named: 'value');
+import 'test_helpers/matchers.dart';
+import 'test_helpers/mocks.dart';
 
 void main() {
   const locationTest = 'London, UK';
