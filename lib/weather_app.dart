@@ -4,8 +4,6 @@ import 'package:weather_app/pages/concert_list_page.dart';
 import 'package:weather_app/pages/current_weather_page.dart';
 import 'package:weather_app/pages/weather_forecast_page.dart';
 
-import 'pages/splash_page.dart';
-
 class WeatherApp extends StatefulWidget {
   const WeatherApp({super.key});
 
@@ -19,11 +17,6 @@ class _WeatherAppState extends State<WeatherApp> {
     return GetMaterialApp(
       title: 'Weather App',
       getPages: [
-        GetPage(
-          name: SplashPage.pageName,
-          page: () => const SplashPage(),
-          binding: SplashBindings(),
-        ),
         GetPage(
           name: ConcertListPage.pageName,
           page: () => const ConcertListPage(),

@@ -13,7 +13,7 @@ class ConcertListBindings extends Bindings {
 class ConcertListPage extends StatefulWidget {
   const ConcertListPage({super.key});
 
-  static const pageName = '/concert-list';
+  static const pageName = '/';
 
   @override
   State<ConcertListPage> createState() => _ConcertListPageState();
