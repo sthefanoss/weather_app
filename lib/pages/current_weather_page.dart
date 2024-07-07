@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:weather_app/controllers/current_weather_controller.dart';
+import 'package:weather_app/pages/weather_forecast_page.dart';
 
 class CurrentWeatherBindings extends Bindings {
   @override
@@ -119,6 +120,14 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
             return const Center(child: CircularProgressIndicator());
           }),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        label: const Text('Forecast'),
+        icon: const Icon(Icons.area_chart_rounded),
+        onPressed: () => Get.toNamed(
+          WeatherForecastPage.pageName,
+          arguments: WeatherForecastArguments(location: controller.location),
+        ),
       ),
     );
   }
