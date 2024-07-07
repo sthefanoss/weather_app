@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:weather_app/controllers/weather_forecast_controller.dart';
+import 'package:weather_app/models/cache_wrapper.dart';
 import 'package:weather_app/models/weather_forecast_model.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/local_storage_service.dart';
@@ -133,6 +134,168 @@ void main() {
       controller.getWeatherForecast();
 
       verify(() => service.getWeatherForecast(location: locationTest)).called(1);
+    });
+
+    test('use value from cache when available and not expired', () async {
+      const expiryDuration = Duration(minutes: 15);
+      final controller = WeatherForecastController(location: locationTest, cacheDuration: expiryDuration);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final timestamp = DateTime.now();
+      final expiry = timestamp.add(expiryDuration);
+
+      when(() => service.getWeatherForecast(location: locationMatcher)).thenThrow((_) async => 'Any Error');
+      when(() => storge.getString(key: keyMatcher)).thenReturn(
+        CacheWrapper(
+          data: WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          timestamp: timestamp,
+          expiryDate: expiry,
+        ).encode((e) => e.toJson()),
+      );
+
+      await controller.getWeatherForecast();
+
+      verifyNever(() => service.getWeatherForecast(location: locationMatcher));
+      expect(
+        controller.state.value,
+        CachedState(
+          WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          offline: false,
+          lastUpdated: timestamp,
+        ),
+      );
+    });
+
+    test('make request and update cache when cache is expired', () async {
+      final controller = WeatherForecastController(location: locationTest);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final timestamp = DateTime.now();
+      final expiry = timestamp.subtract(const Duration(minutes: 1)); // force cache to be expired
+      final response = MockWeatherForecastResponse();
+
+      when(() => service.getWeatherForecast(location: locationMatcher)) //
+          .thenAnswer((_) async => response);
+      when(() => response.list).thenReturn([
+        WeatherList(
+          dt: 1620000000,
+          main: const Main(
+            temp: 20,
+            humidity: 50,
+            pressure: 1000,
+            tempMin: 15,
+            tempMax: 25,
+            feelsLike: 20,
+            seaLevel: 1000,
+            grndLevel: 1000,
+            tempKf: 0,
+          ),
+          rain: Rain(oneHour: 0.25),
+          snow: Snow(oneHour: 0.5),
+          wind: Wind(speed: 10, deg: 180, gust: 15),
+          weather: [
+            Weather(
+              id: 800,
+              main: 'Clear',
+              description: 'clear sky',
+              iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+            )
+          ],
+          clouds: Clouds(all: 0),
+          visibility: 10000,
+          pop: 0.5,
+          sys: const Sys(pod: 'd'),
+          dtTxt: '2021-05-03 12:00:00',
+        ),
+      ]);
+      when(() => storge.saveString(key: keyMatcher, value: valueMatcher)).thenAnswer((_) async {});
+      when(() => storge.getString(key: keyMatcher)).thenReturn(
+        CacheWrapper(
+          data: WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          timestamp: timestamp,
+          expiryDate: expiry,
+        ).encode((e) => e.toJson()),
+      );
+
+      await controller.getWeatherForecast();
+
+      verify(() => service.getWeatherForecast(location: locationMatcher)).called(1);
+      verify(() => storge.getString(key: keyMatcher)).called(1);
+      verify(() => storge.saveString(key: keyMatcher, value: valueMatcher)).called(1);
+      expect(
+        controller.state.value,
+        SuccessState(
+          WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
     });
   });
 }
