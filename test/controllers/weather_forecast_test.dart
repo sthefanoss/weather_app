@@ -3,7 +3,11 @@ import 'package:get/get.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:weather_app/controllers/weather_forecast_controller.dart';
+import 'package:weather_app/models/weather_forecast_model.dart';
+import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/local_storage_service.dart';
+import 'package:weather_app/services/responses/shared.dart';
+import 'package:weather_app/services/responses/weather_forecast_response.dart';
 import 'package:weather_app/services/weather_api_service.dart';
 
 import 'test_helpers/matchers.dart';
@@ -40,32 +44,74 @@ void main() {
       expect(controller.state.value, isA<LoadingState>());
     });
 
-    // TODO
-    // test('state goes to SuccessState after getWeatherForecast is complete successfully', () async {
-    //   final controller = WeatherForecastController(location: locationTest);
-    //   final service = Get.put<WeatherApiService>(MockWeatherApiService());
-    //   final storge = Get.put<LocalStorageService>(MockLocalStorageService());
-    //   final response = MockWeatherForecastResponse();
-    //   when(() => storge.getString(key: keyMatcher)).thenReturn(null);
-    //   when(() => storge.saveString(key: keyMatcher, value: valueMatcher)).thenAnswer((_) async {});
-    //   when(() => service.getWeatherForecast(location: locationMatcher)) //
-    //       .thenAnswer((_) async => response);
-    //   when(() => response.main)
-    //       .thenReturn(Main(humidity: 80, pressure: 1000, tempMax: 25.0, tempMin: 15.0, temp: 20.0, feelsLike: 22.0));
-    //   when(() => response.wind).thenReturn(Wind(speed: 10, deg: 20));
-    //   when(() => response.weather)
-    //       .thenReturn([Weather(description: 'Clouds', iconUrl: 'iconUrl', id: 1, main: 'main')]);
-    //   when(() => response.rain).thenReturn(Rain(oneHour: 1.0, threeHours: 2.0));
-    //   when(() => response.snow).thenReturn(Snow(oneHour: 3.0, threeHours: 4.0));
+    test('state goes to SuccessState after getWeatherForecast is complete successfully', () async {
+      final controller = WeatherForecastController(location: locationTest);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final response = MockWeatherForecastResponse();
+      when(() => storge.getString(key: keyMatcher)).thenReturn(null);
+      when(() => storge.saveString(key: keyMatcher, value: valueMatcher)).thenAnswer((_) async {});
+      when(() => service.getWeatherForecast(location: locationMatcher)) //
+          .thenAnswer((_) async => response);
+      when(() => response.list).thenReturn([
+        WeatherList(
+          dt: 1620000000,
+          main: const Main(
+            temp: 20,
+            humidity: 50,
+            pressure: 1000,
+            tempMin: 15,
+            tempMax: 25,
+            feelsLike: 20,
+            seaLevel: 1000,
+            grndLevel: 1000,
+            tempKf: 0,
+          ),
+          rain: Rain(oneHour: 0.25),
+          snow: Snow(oneHour: 0.5),
+          wind: Wind(speed: 10, deg: 180, gust: 15),
+          weather: [
+            Weather(
+              id: 800,
+              main: 'Clear',
+              description: 'clear sky',
+              iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+            )
+          ],
+          clouds: Clouds(all: 0),
+          visibility: 10000,
+          pop: 0.5,
+          sys: const Sys(pod: 'd'),
+          dtTxt: '2021-05-03 12:00:00',
+        ),
+      ]);
 
-    //   await controller.getWeatherForecast();
+      await controller.getWeatherForecast();
 
-    //   expect(
-    //     controller.state.value,
-    //     const SuccessState(
-
-    //   );
-    // });
+      expect(
+        controller.state.value,
+        SuccessState(
+          WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    });
 
     test('state goes to ErrorState after fetchCurrentWeather is complete with error', () async {
       final controller = WeatherForecastController(location: locationTest);

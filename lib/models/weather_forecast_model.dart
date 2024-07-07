@@ -1,8 +1,9 @@
+import 'package:equatable/equatable.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/responses/weather_forecast_response.dart';
 
-class WeatherForecastModel {
-  const WeatherForecastModel(this.entries);
+class WeatherForecastModel extends Equatable {
+  const WeatherForecastModel({required this.entries});
 
   final List<WeatherForecasEntry> entries;
 
@@ -20,9 +21,12 @@ class WeatherForecastModel {
             );
           },
         ).toList();
+
+  @override
+  List<Object?> get props => [entries];
 }
 
-class WeatherForecasEntry {
+class WeatherForecasEntry extends Equatable {
   final DateTime timestamp;
   final double temperature;
   final double rain;
@@ -40,4 +44,15 @@ class WeatherForecasEntry {
     required this.windSpeed,
     required this.weather,
   });
+
+  @override
+  List<Object?> get props => [
+        timestamp,
+        temperature,
+        rain,
+        snow,
+        humidity,
+        windSpeed,
+        weather,
+      ];
 }
