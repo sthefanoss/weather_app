@@ -20,6 +20,8 @@ class _WeatherAppState extends State<WeatherApp> {
       useInheritedMediaQuery: true,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
+      darkTheme: ThemeData.dark(),
+      theme: ThemeData.light(),
       getPages: [
         GetPage(
           name: ConcertListPage.pageName,
