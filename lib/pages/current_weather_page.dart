@@ -42,92 +42,94 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Current Weather')),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24) + const EdgeInsets.only(top: 24),
-            child: Text(
-              controller.location,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24) + const EdgeInsets.only(top: 24),
+              child: Text(
+                controller.location,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          Obx(() {
-            final state = controller.state.value;
+            Obx(() {
+              final state = controller.state.value;
 
-            if (state case ErrorState(:final offline)) {
-              return Column(
-                children: [
-                  const SizedBox(height: 16),
-                  if (offline)
-                    const Text(
-                      'You are offline! Please, verify your connection.',
-                      textAlign: TextAlign.center,
-                    )
-                  else
-                    const Text('There was an error, please try again.'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: controller.getCurrentWeather,
-                    child: const Text('Retry'),
-                  )
-                ],
-              );
-            }
-
-            if (state case SuccessState(:final data) || CachedState(:final data)) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+              if (state case ErrorState(:final offline)) {
+                return Column(
                   children: [
-                    if (state case CachedState(:final lastUpdated, :final offline)) ...[
-                      Text(
-                        'Last update ${DateFormat('dd/MM HH:mm').format(lastUpdated)}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (offline)
+                    const SizedBox(height: 16),
+                    if (offline)
+                      const Text(
+                        'You are offline! Please, verify your connection.',
+                        textAlign: TextAlign.center,
+                      )
+                    else
+                      const Text('There was an error, please try again.'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: controller.getCurrentWeather,
+                      child: const Text('Retry'),
+                    )
+                  ],
+                );
+              }
+
+              if (state case SuccessState(:final data) || CachedState(:final data)) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (state case CachedState(:final lastUpdated, :final offline)) ...[
                         Text(
-                          'You are offline! Please, verify your connection.',
+                          'Last update ${DateFormat('dd/MM HH:mm').format(lastUpdated)}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
-                    ],
-                    const SizedBox(height: 8),
-                    WeatherInfo(
-                      title: 'Temperature',
-                      value: data.temperature,
-                      unit: '°C',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Wrap(
-                      children: [
-                        for (final weather in data.weather)
-                          Column(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: weather.iconUrl,
-                                width: 128,
-                                height: 128,
-                                fit: BoxFit.cover,
-                              ),
-                              Text(weather.description.capitalize!),
-                            ],
-                          )
+                        if (offline)
+                          Text(
+                            'You are offline! Please, verify your connection.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                       ],
-                    ),
-                    const SizedBox(height: 24),
-                    WeatherInfo(title: 'Rain', value: data.rain, unit: 'mm'),
-                    WeatherInfo(title: 'Snow', value: data.snow, unit: 'mm'),
-                    WeatherInfo(title: 'Humidity', value: data.humidity, unit: '%'),
-                    WeatherInfo(title: 'Wind', value: data.windSpeed, unit: 'm/s'),
-                  ],
-                ),
-              );
-            }
+                      const SizedBox(height: 8),
+                      WeatherInfo(
+                        title: 'Temperature',
+                        value: data.temperature,
+                        unit: '°C',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Wrap(
+                        children: [
+                          for (final weather in data.weather)
+                            Column(
+                              children: [
+                                CachedNetworkImage(
+                                  imageUrl: weather.iconUrl,
+                                  width: 128,
+                                  height: 128,
+                                  fit: BoxFit.cover,
+                                ),
+                                Text(weather.description.capitalize!),
+                              ],
+                            )
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      WeatherInfo(title: 'Rain', value: data.rain, unit: 'mm'),
+                      WeatherInfo(title: 'Snow', value: data.snow, unit: 'mm'),
+                      WeatherInfo(title: 'Humidity', value: data.humidity, unit: '%'),
+                      WeatherInfo(title: 'Wind', value: data.windSpeed, unit: 'm/s'),
+                    ],
+                  ),
+                );
+              }
 
-            return const Center(child: CircularProgressIndicator());
-          }),
-        ],
+              return const Center(child: CircularProgressIndicator());
+            }),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         label: const Text('Forecast'),

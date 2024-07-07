@@ -40,40 +40,41 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Weather Forecast')),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24) + const EdgeInsets.only(top: 24),
-            child: Text(
-              controller.location,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      body: Obx(() {
+        final state = controller.state.value;
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24) + const EdgeInsets.only(top: 24),
+                child: Text(
+                  controller.location,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-          ),
-          Obx(() {
-            final state = controller.state.value;
-
-            if (state case ErrorState(:final offline)) {
-              return Column(
-                children: [
-                  const SizedBox(height: 16),
-                  if (offline)
-                    const Text(
-                      'You are offline! Please, verify your connection.',
-                      textAlign: TextAlign.center,
+            if (state case ErrorState(:final offline))
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    if (offline)
+                      const Text(
+                        'You are offline! Please, verify your connection.',
+                        textAlign: TextAlign.center,
+                      )
+                    else
+                      const Text('There was an error, please try again.'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: controller.getWeatherForecast,
+                      child: const Text('Retry'),
                     )
-                  else
-                    const Text('There was an error, please try again.'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: controller.getWeatherForecast,
-                    child: const Text('Retry'),
-                  )
-                ],
-              );
-            }
-            if (state case SuccessState(:final data) || CachedState(:final data)) {
-              return Expanded(
+                  ],
+                ),
+              )
+            else if (state case SuccessState(:final data) || CachedState(:final data)) ...[
+              SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -93,56 +94,51 @@ class _WeatherForecastPageState extends State<WeatherForecastPage> {
                         ],
                       ]),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: ListView.separated(
-                          separatorBuilder: (context, index) => const SizedBox(height: 8),
-                          itemCount: data.entries.length,
-                          itemBuilder: (context, index) {
-                            final element = data.entries[index];
-                            return ListTile(
-                              leading: Stack(
-                                children: [
-                                  CachedNetworkImage(
-                                    imageUrl: element.weather.first.iconUrl,
-                                    width: 48,
-                                    height: 48,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: Text(DateFormat('dd/MM HH:mm').format(element.timestamp)),
-                                  ),
-                                ],
-                              ),
-                              title: Text(element.weather.first.description.capitalize!),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  WeatherInfo(title: 'Temperature', value: element.temperature, unit: '°C'),
-                                  WeatherInfo(title: 'Rain', value: element.rain, unit: 'mm'),
-                                  WeatherInfo(title: 'Snow', value: element.snow, unit: 'mm'),
-                                  WeatherInfo(title: 'Humidity', value: element.humidity, unit: '%'),
-                                  WeatherInfo(title: 'Wind', value: element.windSpeed, unit: 'm/s'),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              );
-            }
-
-            return const Center(child: CircularProgressIndicator());
-          }),
-        ],
-      ),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  childCount: data.entries.length,
+                  (context, index) {
+                    final element = data.entries[index];
+                    return ListTile(
+                      leading: Stack(
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: element.weather.first.iconUrl,
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Text(DateFormat('dd/MM HH:mm').format(element.timestamp)),
+                          ),
+                        ],
+                      ),
+                      title: Text(element.weather.first.description.capitalize!),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          WeatherInfo(title: 'Temperature', value: element.temperature, unit: '°C'),
+                          WeatherInfo(title: 'Rain', value: element.rain, unit: 'mm'),
+                          WeatherInfo(title: 'Snow', value: element.snow, unit: 'mm'),
+                          WeatherInfo(title: 'Humidity', value: element.humidity, unit: '%'),
+                          WeatherInfo(title: 'Wind', value: element.windSpeed, unit: 'm/s'),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ] else
+              const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+          ],
+        );
+      }),
     );
   }
 }
