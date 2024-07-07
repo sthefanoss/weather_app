@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:weather_app/services/interceptors/no_connection_interceptor.dart';
 
 import 'package:weather_app/services/responses/current_weather_response.dart';
 import 'package:weather_app/services/responses/weather_forecast_response.dart';
@@ -20,7 +23,10 @@ class OpenWeatherApiService implements WeatherApiService {
             'units': 'metric',
           }),
         ) {
-    _dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
+    _dio.interceptors.addAll([
+      LogInterceptor(responseBody: true, requestBody: true),
+      NoConnectionInterceptor(),
+    ]);
   }
 
   @override
@@ -34,4 +40,12 @@ class OpenWeatherApiService implements WeatherApiService {
     final response = await _dio.get('/forecast', queryParameters: {'q': location});
     return WeatherForecastResponse.fromJson(response.data);
   }
+}
+
+class NoConnectionException extends DioException {
+  NoConnectionException({required super.requestOptions})
+      : super(
+          type: DioExceptionType.connectionError,
+          error: const SocketException('No connection'),
+        );
 }

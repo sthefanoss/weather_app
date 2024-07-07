@@ -25,11 +25,11 @@ class LoadingState<D extends Object> extends ControllerState<D> {
 @immutable
 class ErrorState<D extends Object> extends ControllerState<D> {
   final Object? errorMessage;
-
-  const ErrorState({required this.errorMessage});
+  final bool offline;
+  const ErrorState({required this.errorMessage, this.offline = false});
 
   @override
-  List<Object?> get props => [errorMessage];
+  List<Object?> get props => [errorMessage, offline];
 }
 
 @immutable

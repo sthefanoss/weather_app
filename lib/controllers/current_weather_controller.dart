@@ -42,6 +42,18 @@ class CurrentWeatherController extends GetxController with CachedControllerMixin
       state.value = SuccessState(convertedModel);
 
       updateCache(convertedModel);
+    } on NoConnectionException catch (error) {
+      final cachedData = getCachedData(ignoreExpiryTime: true);
+      if (cachedData != null) {
+        state.value = CachedState(
+          cachedData.data,
+          offline: true,
+          lastUpdated: cachedData.timestamp,
+        );
+        return;
+      }
+
+      state.value = ErrorState(errorMessage: error, offline: true);
     } catch (e) {
       state.value = ErrorState(errorMessage: e.toString());
     }
