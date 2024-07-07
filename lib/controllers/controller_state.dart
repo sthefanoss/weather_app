@@ -28,3 +28,16 @@ class SuccessState<D extends Object> extends ControllerState<D> {
 
   const SuccessState(this.data);
 }
+
+@immutable
+class CachedState<D extends Object> extends ControllerState<D> {
+  final D data;
+  final bool offline;
+  final DateTime lastUpdated;
+
+  const CachedState(
+    this.data, {
+    required this.offline,
+    required this.lastUpdated,
+  });
+}
