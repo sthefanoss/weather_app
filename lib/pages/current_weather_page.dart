@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:weather_app/controllers/controller_state.dart';
 import 'package:weather_app/controllers/current_weather_controller.dart';
 
@@ -58,14 +59,14 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                   const Text('There was an error, please try again.'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: controller.fetchCurrentWeather,
+                    onPressed: controller.getCurrentWeather,
                     child: const Text('Retry'),
                   )
                 ],
               );
             }
 
-            if (state case SuccessState(:final data)) {
+            if (state case SuccessState(:final data) || CachedState(:final data)) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
@@ -98,6 +99,18 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                     WeatherInfo(title: 'Snow', value: data.snow, unit: 'mm'),
                     WeatherInfo(title: 'Humidity', value: data.humidity, unit: '%'),
                     WeatherInfo(title: 'Wind', value: data.windSpeed, unit: 'm/s'),
+                    if (state case CachedState(:final lastUpdated, :final offline)) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Last update ${DateFormat('dd/MM HH:mm').format(lastUpdated)}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w200),
+                      ),
+                      if (offline)
+                        Text(
+                          'You are offline! Please, verify your connection.',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w200),
+                        ),
+                    ],
                   ],
                 ),
               );
