@@ -48,7 +48,7 @@ class WeatherForecastController extends GetxController with CachedControllerMixi
   final Duration cacheDuration;
 
   @override
-  String get cacheKey => 'current_weather_$location';
+  String get cacheKey => 'weather_forecast_$location';
 
   @override
   WeatherForecastModel cacheDecode(Map<String, dynamic> value) => //
