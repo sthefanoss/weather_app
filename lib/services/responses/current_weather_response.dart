@@ -1,3 +1,5 @@
+import 'package:weather_app/services/responses/shared.dart';
+
 class CurrentWeatherResponse {
   final Coord coord;
   final List<Weather> weather;
@@ -54,37 +56,6 @@ class CurrentWeatherResponse {
   }
 }
 
-class Coord {
-  final double lon;
-  final double lat;
-
-  Coord({required this.lon, required this.lat});
-
-  factory Coord.fromJson(Map<String, dynamic> json) {
-    return Coord(
-      lon: json['lon'].toDouble(),
-      lat: json['lat'].toDouble(),
-    );
-  }
-}
-
-class Weather {
-  final int id;
-  final String main;
-  final String description;
-  final String iconUrl;
-
-  Weather({required this.id, required this.main, required this.description, required this.iconUrl});
-
-  factory Weather.fromJson(Map<String, dynamic> json) {
-    return Weather(
-      id: json['id'],
-      main: json['main'],
-      description: json['description'],
-      iconUrl: 'https://openweathermap.org/img/wn/${json['icon']}@4x.png',
-    );
-  }
-}
 
 class Main {
   final double temp;
@@ -117,62 +88,6 @@ class Main {
       tempMax: json['temp_max'].toDouble(),
       seaLevel: json['sea_level'],
       grndLevel: json['grnd_level'],
-    );
-  }
-}
-
-class Wind {
-  final double speed;
-  final int deg;
-  final double? gust;
-
-  Wind({required this.speed, required this.deg, this.gust});
-
-  factory Wind.fromJson(Map<String, dynamic> json) {
-    return Wind(
-      speed: json['speed'].toDouble(),
-      deg: json['deg'],
-      gust: json['gust']?.toDouble(),
-    );
-  }
-}
-
-class Clouds {
-  final int all;
-
-  Clouds({required this.all});
-
-  factory Clouds.fromJson(Map<String, dynamic> json) {
-    return Clouds(
-      all: json['all'],
-    );
-  }
-}
-
-class Rain {
-  final double? oneHour;
-  final double? threeHours;
-
-  Rain({this.oneHour, this.threeHours});
-
-  factory Rain.fromJson(Map<String, dynamic> json) {
-    return Rain(
-      oneHour: json['1h']?.toDouble(),
-      threeHours: json['3h']?.toDouble(),
-    );
-  }
-}
-
-class Snow {
-  final double? oneHour;
-  final double? threeHours;
-
-  Snow({this.oneHour, this.threeHours});
-
-  factory Snow.fromJson(Map<String, dynamic> json) {
-    return Snow(
-      oneHour: json['1h']?.toDouble(),
-      threeHours: json['3h']?.toDouble(),
     );
   }
 }

@@ -5,8 +5,10 @@ import 'package:weather_app/controllers/current_weather_controller.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:weather_app/models/cache_wrapper.dart';
 import 'package:weather_app/models/current_weather_model.dart';
+import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/local_storage_service.dart';
 import 'package:weather_app/services/responses/current_weather_response.dart';
+import 'package:weather_app/services/responses/shared.dart';
 import 'package:weather_app/services/weather_api_service.dart';
 
 import 'test_helpers/matchers.dart';
