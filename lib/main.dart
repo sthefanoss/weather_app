@@ -1,3 +1,4 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,5 +17,10 @@ void main() async {
     OpenWeatherApiService(apiKey: dotenv.env['OPEN_WEATHER_API_KEY']!),
   );
 
-  runApp(const WeatherApp());
+  runApp(
+    DevicePreview(
+      enabled: dotenv.env['DEVICE_PREVIEW'] == 'TRUE',
+      builder: (context) => const WeatherApp(), // Wrap your app
+    ),
+  );
 }

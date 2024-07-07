@@ -1,3 +1,4 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:weather_app/pages/concert_list_page.dart';
@@ -16,6 +17,9 @@ class _WeatherAppState extends State<WeatherApp> {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Weather App',
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
       getPages: [
         GetPage(
           name: ConcertListPage.pageName,
