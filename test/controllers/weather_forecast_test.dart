@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:weather_app/controllers/controller_state.dart';
@@ -295,6 +296,90 @@ void main() {
             ],
           ),
         ),
+      );
+    });
+
+    test('use cache when offline ignoring expiration', () async {
+      final controller = WeatherForecastController(location: locationTest);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final timestamp = DateTime.now();
+      final expiry = timestamp.subtract(const Duration(minutes: 1));
+
+      when(() => service.getWeatherForecast(location: locationMatcher))
+          .thenThrow(NoConnectionException(requestOptions: RequestOptions()));
+      when(() => storge.getString(key: keyMatcher)).thenReturn(
+        CacheWrapper<WeatherForecastModel>(
+          data: WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          timestamp: timestamp,
+          expiryDate: expiry,
+        ).encode((e) => e.toJson()),
+      );
+
+      await controller.getWeatherForecast();
+
+      verify(() => service.getWeatherForecast(location: locationMatcher)).called(1);
+      verify(() => storge.getString(key: keyMatcher)).called(2);
+      expect(
+        controller.state.value,
+        CachedState<WeatherForecastModel>(
+          WeatherForecastModel(
+            entries: [
+              WeatherForecasEntry(
+                timestamp: DateTime.fromMillisecondsSinceEpoch(1620000000 * 1000),
+                temperature: 20,
+                rain: 0.25,
+                snow: 0.5,
+                humidity: 50,
+                windSpeed: 10,
+                weather: const [
+                  WeatherModel(
+                    description: 'clear sky',
+                    iconUrl: 'http://openweathermap.org/img/wn/01d.png',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          offline: true,
+          lastUpdated: timestamp,
+        ),
+      );
+    });
+
+    test('state goes to error and offline to true when no cache and no connection', () async {
+      final controller = WeatherForecastController(location: locationTest);
+      final service = Get.put<WeatherApiService>(MockWeatherApiService());
+      final storge = Get.put<LocalStorageService>(MockLocalStorageService());
+      final exception = NoConnectionException(requestOptions: RequestOptions());
+
+      when(() => service.getWeatherForecast(location: locationMatcher)).thenThrow(exception);
+      when(() => storge.getString(key: keyMatcher)).thenReturn(null);
+
+      await controller.getWeatherForecast();
+
+      verify(() => service.getWeatherForecast(location: locationMatcher)).called(1);
+      verify(() => storge.getString(key: keyMatcher)).called(2);
+      expect(
+        controller.state.value,
+        ErrorState<WeatherForecastModel>(errorMessage: exception, offline: true),
       );
     });
   });
