@@ -3,7 +3,7 @@ class CurrentWeatherResponse {
   final List<Weather> weather;
   final String base;
   final Main main;
-  final int visibilityInMeters;
+  final int visibility;
   final Wind wind;
   final Clouds clouds;
   final Rain? rain;
@@ -20,7 +20,7 @@ class CurrentWeatherResponse {
     required this.weather,
     required this.base,
     required this.main,
-    required this.visibilityInMeters,
+    required this.visibility,
     required this.wind,
     required this.clouds,
     this.rain,
@@ -39,7 +39,7 @@ class CurrentWeatherResponse {
       weather: (json['weather'] as List).map((i) => Weather.fromJson(i)).toList(),
       base: json['base'],
       main: Main.fromJson(json['main']),
-      visibilityInMeters: json['visibility'],
+      visibility: json['visibility'],
       wind: Wind.fromJson(json['wind']),
       clouds: Clouds.fromJson(json['clouds']),
       rain: json['rain'] != null ? Rain.fromJson(json['rain']) : null,
@@ -72,16 +72,16 @@ class Weather {
   final int id;
   final String main;
   final String description;
-  final String icon;
+  final String iconUrl;
 
-  Weather({required this.id, required this.main, required this.description, required this.icon});
+  Weather({required this.id, required this.main, required this.description, required this.iconUrl});
 
   factory Weather.fromJson(Map<String, dynamic> json) {
     return Weather(
       id: json['id'],
       main: json['main'],
       description: json['description'],
-      icon: json['icon'],
+      iconUrl: 'https://openweathermap.org/img/wn/${json['icon']}@4x.png',
     );
   }
 }

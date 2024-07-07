@@ -22,8 +22,7 @@ class CurrentWeatherController extends GetxController {
     try {
       final response = await Get.find<WeatherApiService>().getCurrentWeather(location: location);
 
-      //TODO make DTO
-      state.value = SuccessState(CurrentWeatherModel());
+      state.value = SuccessState(CurrentWeatherModel.fromCurrentWeatherResponse(response));
     } catch (e) {
       state.value = ErrorState(errorMessage: e.toString());
     }
